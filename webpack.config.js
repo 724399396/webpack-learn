@@ -6,15 +6,22 @@ const {
 } = require("webpack-merge");
 const parts = require("./webpack.parts");
 
+const cssLoaders = [parts.autoprefix(), parts.tailwind()];
+
 const commonConfig = merge([{
 		entry: ["./src"]
 	},
 	parts.page({
 		title: "Demo"
 	}),
+	parts.extractCSS({
+		loaders: cssLoaders
+	}),
+	parts.loadImages({ limit: 15000 }),
+	parts.loadJavaScript(),
 ]);
 
-const productionConfig = merge([]);
+const productionConfig = merge([parts.eliminateUnusedCSS()]);
 
 const developmentConfig = merge([{
 		entry: ["webpack-plugin-serve/client"]
@@ -33,7 +40,9 @@ const getConfig = (mode) => {
 				mode
 			});
 		default:
-			throw new Error(`Trying to use an unknown mode, ${mode}`);
+			return merge(commonConfig, {
+				mode
+			})
 	}
 };
 
